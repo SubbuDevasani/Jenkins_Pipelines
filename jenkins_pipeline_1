@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Define variables
+        FEATURE_BRANCH = "feature-branch"
+        VAR1 = "YourVar1Value"
+        REPO_URL = "https://github.com/your-org/Vault-repo.git"
+        GIT_CREDENTIALS_ID = "your-git-credentials-id"
+    }
+    
+    stages {
+        stage('Execute All Steps') {
+            steps {
+                script {
+                    // Clone the repository
+                    git branch: 'master', credentialsId: "${GIT_CREDENTIALS_ID}", url: "${REPO_URL}"
+                    
+                    // Create a feature branch
+                    sh """
+                        git checkout -b ${FEATURE_BRANCH}
+                    """
+                    
+                    // Append new line with VAR1 value to an existing file
+                    sh """
+                        echo "${VAR1}" >> path/to/your/file.txt
+                    """
+                    
+                    // Commit and push the changes
+                    sh """
+                        git add path/to/your/file.txt
+                        git commit -m "Add VAR1 value to file"
+                        git push origin ${FEATURE_BRANCH}
+                    """
+                    
+                    // Create a merge request (this example uses the GitHub CLI)
+                    sh """
+                        gh pr create --base master --head ${FEATURE_BRANCH} --title "Merge ${FEATURE_BRANCH} to master" --body "This PR merges the changes from ${FEATURE_BRANCH} to master"
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            script {
+                // Cleanup workspace if necessary
+                cleanWs()
+            }
+        }
+    }
+}
