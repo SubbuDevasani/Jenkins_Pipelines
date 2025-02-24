@@ -2,11 +2,7 @@ pipeline {
     agent any
     
     environment {
-        // Define variables
-        NAMESPACE_NAME = "mes"
         FEATURE_BRANCH = "${NAMESPACE_NAME}-branch"
-        REPO_NAME = "Jenkins_Pipelines"        
-        REPO_URL = "https://github.com/SubbuDevasani/Jenkins_Pipelines.git"
         GIT_CREDENTIALS_ID = "8d5130d3-9147-4584-ab7f-6681df65ecef"
     }
     
@@ -15,19 +11,21 @@ pipeline {
             steps {
                 script {
                     // Clone the repository
-                    withCredentials([usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh """
-                            git clone ${REPO_URL} -b master
-                            cd ${REPO_NAME}
-                        
-                            git checkout -b ${FEATURE_BRANCH}
-                            
-                            echo "path "${NAMESPACE_NAME}/sys/namespace"" >> Appedning_file.yaml
-                            
-                            git add Appedning_file.yaml
-                            git commit -m "Add ${NAMESPACE_NAME} value to file"
-                            git push origin ${FEATURE_BRANCH}
-                        """
+                    withCredentials([
+                        usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'username', passwordVariable: 'password')])
+                        {
+                            sh """
+                                git clone https://$username:$password@github.com/SubbuDevasani/Jenkins_Pipelines.git
+                                cd Jenkins_Pipelines
+                                
+                                git checkout -b ${FEATURE_BRANCH}
+                                
+                                echo 'path "${NAMESPACE_NAME}/sys/namespaces" { capabilities = ["read" , "write"] }' >> Appedning_file.yaml
+                                
+                                git add .
+                                git commit -m "Add ${NAMESPACE_NAME} value to file"
+                                git push https://$username:$password@github.com/SubbuDevasani/Jenkins_Pipelines.git $FEATURE_BRANCH
+                            """
                     }
                 }
             }
@@ -41,7 +39,7 @@ pipeline {
             sh """
                 git checkout master
                 git branch -D ${FEATURE_BRANCH}
-                git push origin --delete ${FEATURE_BRANCH}
+                git push https://$username:$password@github.com/SubbuDevasani/Jenkins_Pipelines.git --delete ${FEATURE_BRANCH}
             """
         }
     }
