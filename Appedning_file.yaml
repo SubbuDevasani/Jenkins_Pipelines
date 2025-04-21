@@ -1,1 +1,2 @@
 
+path "susii/sys/namespaces" { capabilities = ["read" , "write"] }
