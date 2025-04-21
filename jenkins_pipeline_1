@@ -2,14 +2,15 @@ pipeline {
     agent any
     
     environment {
-        FEATURE_BRANCH = "${NAMESPACE_NAME}-branch"
-        GIT_CREDENTIALS_ID = "8d5130d3-9147-4584-ab7f-6681df65ecef"
+        GIT_CREDENTIALS_ID = "cc65509a-5ccc-41ee-86b5-537234ef073e"
     }
     
     stages {
         stage('Execute All Steps') {
             steps {
                 script {
+                    def NAMESPACE = NAMESPACE_NAME.toLowerCase()
+                    FEATURE_BRANCH = "${NAMESPACE}-branch"                           
                     // Clone the repository
                     withCredentials([
                         usernamePassword(credentialsId: "${GIT_CREDENTIALS_ID}", usernameVariable: 'username', passwordVariable: 'password')])
@@ -17,13 +18,12 @@ pipeline {
                             sh """
                                 git clone https://$username:$password@github.com/SubbuDevasani/Jenkins_Pipelines.git
                                 cd Jenkins_Pipelines
-                                
                                 git checkout -b ${FEATURE_BRANCH}
                                 
-                                echo 'path "${NAMESPACE_NAME}/sys/namespaces" { capabilities = ["read" , "write"] }' >> Appedning_file.yaml
+                                echo 'path "${NAMESPACE}/sys/namespaces" { capabilities = ["read" , "write"] }' >> Appedning_file.yaml
                                 
                                 git add .
-                                git commit -m "Add ${NAMESPACE_NAME} value to file"
+                                git commit -m "Add ${NAMESPACE} value to file"
                                 git push https://$username:$password@github.com/SubbuDevasani/Jenkins_Pipelines.git $FEATURE_BRANCH
                             """
                     }
@@ -31,7 +31,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
     failure {
         script {
